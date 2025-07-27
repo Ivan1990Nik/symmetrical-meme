@@ -2,10 +2,11 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Zombie</title>
     <style>
+        /* (Ваши стили без изменений) */
         body {
             display: flex;
             flex-direction: column;
@@ -13,8 +14,6 @@
             padding: 30px;
             font-family: Arial, Helvetica, sans-serif;
         }
-
-
 
         button {
             width: 135px;
@@ -31,9 +30,7 @@
             align-items: center;
             padding: 20px;
             color: white;
-
             border: 2px solid white;
-            /* Рамка для отображения границ элементов */
         }
 
         .container {
@@ -51,14 +48,10 @@
 
         .item {
             box-sizing: border-box;
-            /* Учитывать padding и border в расчетах ширины */
-
             width: 120px;
             height: 120px;
             margin: 10px 20px;
             border-radius: 50%;
-           /*  border: 2px solid white; */
-            /* Рамка для отображения границ элементов */
         }
 
         img {
@@ -66,9 +59,6 @@
             height: 100%;
         }
 
-        /* Существующие стили остаются без изменений */
-
-        /* Мобильная адаптация */
         @media (max-width: 600px) {
             body {
                 padding: 15px;
@@ -90,17 +80,14 @@
                 height: 100%;
                 margin: 30px auto;
                 padding: 0 10px;
-
                 background-image: url("images/wall.jpg");
                 background-size: auto;
                 background-repeat: no-repeat;
                 background-position: center -150px;
-
                 box-shadow: 0 0 30px 15px rgba(0, 0, 0, 0.5);
             }
 
             .container .item {
-          
                 width: 80px;
                 height: 80px;
                 margin: 8px 10px;
@@ -132,7 +119,10 @@
                 <span id="miss-counter">0</span>
             </div>
         </div>
+        <!-- Добавляем input для загрузки картинки -->
+        <input type="file" id="upload-image" accept="image/*" />
     </div>
+
     <div class="container">
         <div class="item"></div>
         <div class="item"></div>
@@ -150,86 +140,119 @@
         <div class="item"></div>
         <div class="item"></div>
     </div>
+
     <audio id="sound-bu" src="sounds/bu.mp3" loop></audio>
     <audio id="sound-shot" src="sounds/shot.mp3"></audio>
 
     <script>
         const items = document.querySelectorAll(".item");
-const hitCounter = document.querySelector("#hit-counter");
-const missCounter = document.querySelector("#miss-counter");
-const shotAudio = document.querySelector("#sound-shot");
-const buAudio = document.querySelector("#sound-bu");
-const soundBtn = document.querySelector("#sound-btn");
+        const hitCounter = document.querySelector("#hit-counter");
+        const missCounter = document.querySelector("#miss-counter");
+        const shotAudio = document.querySelector("#sound-shot");
+        const buAudio = document.querySelector("#sound-bu");
+        const soundBtn = document.querySelector("#sound-btn");
+        const uploadInput = document.getElementById("upload-image");
 
-let hit = false;
-let currentZombie = null;
+        let hitsThisRound = 0; // количество попаданий за текущий интервал
 
-function getRandomIndex(array) {
-  return Math.floor(Math.random() * array.length);
+        // Переменная с текущим изображением зомби (по умолчанию)
+        let zombieImageSrc = "images/zombie.png";
+
+        // Функция для смены картинки зомби
+        function setZombieImage(src) {
+            zombieImageSrc = src;
+        }
+
+        function getRandomIndexes(array, count) {
+            const indexes = new Set();
+            while (indexes.size < count) {
+                const idx = Math.floor(Math.random() * array.length);
+                indexes.add(idx);
+            }
+            return Array.from(indexes);
+        }
+
+        // Создаём зомби с текущим изображением
+        function createZombie() {
+            const zombieImg = document.createElement("img");
+            zombieImg.src = zombieImageSrc;
+            zombieImg.classList.add("zombie-image");
+            return zombieImg;
+        }
+
+        function createHitImage() {
+            const hitImg = document.createElement("img");
+            hitImg.src = "images/blood.png";
+            hitImg.classList.add("hit-image");
+            return hitImg;
+        }
+
+        function clearZombiesAndHits() {
+            document.querySelectorAll(".zombie-image").forEach(z => z.remove());
+            document.querySelectorAll(".hit-image").forEach(h => h.remove());
+        }
+
+       function showZombies() {
+    clearZombiesAndHits();
+
+    hitsThisRound = 0;
+
+    // Выбираем один случайный индекс
+    const randomIndex = Math.floor(Math.random() * items.length);
+
+    const zombie = createZombie();
+    items[randomIndex].appendChild(zombie);
+
+    zombie.onclick = function (event) {
+        event.stopPropagation();
+        hitsThisRound++;
+        hitCounter.textContent = +hitCounter.textContent + 1;
+        shotAudio.currentTime = 0;
+        shotAudio.play();
+
+        zombie.remove();
+
+        const hitImg = createHitImage();
+        items[randomIndex].appendChild(hitImg);
+    };
 }
 
-function createZombie() {
-  const zombieImg = document.createElement("img");
-  zombieImg.src = "images/zombie.png";
-  zombieImg.classList.add("zombie-image");
-  return zombieImg;
-}
 
-function createHitImage() {
-  const hitImg = document.createElement("img");
-  hitImg.src = "images/blood.png";
-  hitImg.classList.add("hit-image"); // можно добавить стили для .hit-image в CSS
-  return hitImg;
-}
+        soundBtn.onclick = function () {
+            if (!buAudio.paused) {
+                buAudio.pause();
+                buAudio.currentTime = 0;
+                soundBtn.textContent = "SOUND ON";
+            } else {
+                buAudio.play();
+                soundBtn.textContent = "SOUND OFF";
+            }
+        };
 
-function showZombie() {
-  // Удаляем предыдущего зомби и следы попадания
-  if (currentZombie) {
-    currentZombie.remove();
-  }
+        // Обработчик загрузки файла
+        uploadInput.addEventListener("change", function () {
+            const file = this.files[0];
+            if (!file) return;
 
-  // Удаляем все hit-изображения (если хотите, чтобы они исчезали)
-  document.querySelectorAll(".hit-image").forEach(img => img.remove());
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                setZombieImage(e.target.result);
+                alert("Новое изображение зомби загружено и будет использовано!");
+            };
+            reader.readAsDataURL(file);
+        });
 
-  const randomIndex = getRandomIndex(items);
-  currentZombie = createZombie();
-  items[randomIndex].appendChild(currentZombie);
+        // Запускаем игру
+        showZombies();
 
-  currentZombie.onclick = function () {
-    hit = true;
-    hitCounter.textContent = +hitCounter.textContent + 1;
-    shotAudio.currentTime = 0;
-    shotAudio.play();
-
-    currentZombie.remove();
-
-    const hitImg = createHitImage();
-    items[randomIndex].appendChild(hitImg);
-  };
-}
-
-soundBtn.onclick = function () {
-  if (!buAudio.paused) {
-    buAudio.pause();
-    buAudio.currentTime = 0;
-    soundBtn.textContent = "SOUND ON";
-  } else {
-    buAudio.play();
-    soundBtn.textContent = "SOUND OFF";
-  }
-};
-
-// Запускаем игру
-showZombie();
-
-setInterval(function () {
-  if (!hit) {
-    missCounter.textContent = +missCounter.textContent + 1;
-  }
-  hit = false;
-  showZombie();
-}, 2000);
-
+        setInterval(function () {
+            if (hitsThisRound === 0) {
+                missCounter.textContent = +missCounter.textContent + 2;
+            } else if (hitsThisRound === 1) {
+                missCounter.textContent = +missCounter.textContent + 1;
+            }
+            showZombies();
+        }, 2000);
     </script>
 </body>
 
