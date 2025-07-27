@@ -55,7 +55,7 @@
             height: 120px;
             margin: 10px 20px;
             border-radius: 50%;
-           /*  border: 2px solid white; */
+         /*    border: 2px solid white; */
             /* Рамка для отображения границ элементов */
         }
 
@@ -63,6 +63,52 @@
             width: 100%;
             height: 100%;
         }
+
+        /* Существующие стили остаются без изменений */
+
+        /* Мобильная адаптация */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+
+            }
+
+            button {
+                width: 100%;
+                padding: 12px 0;
+                font-size: 16px;
+            }
+
+            .game-panel {
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .container {
+                width: 300px;
+                height: 100%;
+                margin: 30px auto;
+                padding: 0 10px;
+
+                background-image: url("images/wall.jpg");
+                background-size: auto;
+                background-repeat: no-repeat;
+                background-position: center -150px;
+                /* смещение по вертикали */
+
+                box-shadow: 0 0 30px 15px rgba(0, 0, 0, 0.5);
+
+                .item {
+                    width: 80px;
+                    height: 80px;
+                    margin: 8px 10px;
+                }
+
+                img {
+                    object-fit: cover;
+                    /* чтобы картинки хорошо вписывались */
+                }
+            }
     </style>
 </head>
 
@@ -96,7 +142,7 @@
         <div class="item"></div>
     </div>
     <audio id="sound-bu" src="sounds/bu.mp3" loop></audio>
-    <audio id="sound-shot" src="sounds/shot.mp3" ></audio>
+    <audio id="sound-shot" src="sounds/shot.mp3"></audio>
 
     <script>
         const items = document.querySelectorAll(".item")
@@ -116,7 +162,7 @@
         items[randomIndex].append(zombieImg)
 
         setInterval(function () {
-            if(hit === true) {
+            if (hit === true) {
                 hit = false
 
             } else {
@@ -125,7 +171,7 @@
             randomIndex = getRandomIndex(items)
             items[randomIndex].append(zombieImg)
             hitImg.remove()
-        }, 1000)
+        }, 2000)
 
         const buAudio = document.querySelector("#sound-bu")
         const soundBtn = document.querySelector("#sound-btn")
@@ -143,9 +189,9 @@
         hitImg.src = "images/blood.png"
 
         const hitCounter = document.querySelector("#hit-counter")
-        
+
         const shotAudio = document.querySelector("#sound-shot")
-        
+
 
         zombieImg.onclick = function () {
             hit = true
