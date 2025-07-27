@@ -14,6 +14,8 @@
             font-family: Arial, Helvetica, sans-serif;
         }
 
+
+
         button {
             width: 135px;
             padding: 10px 25px;
@@ -55,7 +57,7 @@
             height: 120px;
             margin: 10px 20px;
             border-radius: 50%;
-         /*    border: 2px solid white; */
+            border: 2px solid white;
             /* Рамка для отображения границ элементов */
         }
 
@@ -70,7 +72,6 @@
         @media (max-width: 600px) {
             body {
                 padding: 15px;
-
             }
 
             button {
@@ -81,7 +82,7 @@
 
             .game-panel {
                 gap: 15px;
-                padding: 15px;
+                padding: 5px;
             }
 
             .container {
@@ -94,21 +95,29 @@
                 background-size: auto;
                 background-repeat: no-repeat;
                 background-position: center -150px;
-                /* смещение по вертикали */
 
                 box-shadow: 0 0 30px 15px rgba(0, 0, 0, 0.5);
-
-                .item {
-                    width: 80px;
-                    height: 80px;
-                    margin: 8px 10px;
-                }
-
-                img {
-                    object-fit: cover;
-                    /* чтобы картинки хорошо вписывались */
-                }
             }
+
+            .container .item {
+          
+                width: 80px;
+                height: 80px;
+                margin: 8px 10px;
+            }
+
+            .zombie-image {
+                transform: translateX(28%);
+                width: 50px;
+                height: 80px;
+            }
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
     </style>
 </head>
 
@@ -145,63 +154,81 @@
     <audio id="sound-shot" src="sounds/shot.mp3"></audio>
 
     <script>
-        const items = document.querySelectorAll(".item")
-        let randomIndex;
-        function getRandomIndex(array) {
-            return Math.floor(Math.random() * array.length)
-        }
+        const items = document.querySelectorAll(".item");
+const hitCounter = document.querySelector("#hit-counter");
+const missCounter = document.querySelector("#miss-counter");
+const shotAudio = document.querySelector("#sound-shot");
+const buAudio = document.querySelector("#sound-bu");
+const soundBtn = document.querySelector("#sound-btn");
 
-        let hit = false
-        let miss = false
-        const missCounter = document.querySelector("#miss-counter")
+let hit = false;
+let currentZombie = null;
 
-        const zombieImg = document.createElement("img")
-        zombieImg.src = "images/zombie.png"
+function getRandomIndex(array) {
+  return Math.floor(Math.random() * array.length);
+}
 
-        randomIndex = getRandomIndex(items)
-        items[randomIndex].append(zombieImg)
+function createZombie() {
+  const zombieImg = document.createElement("img");
+  zombieImg.src = "images/zombie.png";
+  zombieImg.classList.add("zombie-image");
+  return zombieImg;
+}
 
-        setInterval(function () {
-            if (hit === true) {
-                hit = false
+function createHitImage() {
+  const hitImg = document.createElement("img");
+  hitImg.src = "images/blood.png";
+  hitImg.classList.add("hit-image"); // можно добавить стили для .hit-image в CSS
+  return hitImg;
+}
 
-            } else {
-                missCounter.textContent++
-            }
-            randomIndex = getRandomIndex(items)
-            items[randomIndex].append(zombieImg)
-            hitImg.remove()
-        }, 2000)
+function showZombie() {
+  // Удаляем предыдущего зомби и следы попадания
+  if (currentZombie) {
+    currentZombie.remove();
+  }
 
-        const buAudio = document.querySelector("#sound-bu")
-        const soundBtn = document.querySelector("#sound-btn")
-        soundBtn.onclick = function () {
-            if (buAudio.currentTime) {
-                buAudio.pause()
-                buAudio.currentTime = 0
-                soundBtn.textContent = "SOUND ON"
-            } else {
-                buAudio.play()
-                soundBtn.textContent = "SOUND OFF"
-            }
-        }
-        const hitImg = document.createElement("img")
-        hitImg.src = "images/blood.png"
+  // Удаляем все hit-изображения (если хотите, чтобы они исчезали)
+  document.querySelectorAll(".hit-image").forEach(img => img.remove());
 
-        const hitCounter = document.querySelector("#hit-counter")
+  const randomIndex = getRandomIndex(items);
+  currentZombie = createZombie();
+  items[randomIndex].appendChild(currentZombie);
 
-        const shotAudio = document.querySelector("#sound-shot")
+  currentZombie.onclick = function () {
+    hit = true;
+    hitCounter.textContent = +hitCounter.textContent + 1;
+    shotAudio.currentTime = 0;
+    shotAudio.play();
 
+    currentZombie.remove();
 
-        zombieImg.onclick = function () {
-            hit = true
-            hitCounter.textContent++
-            shotAudio.currentTime = 0
-            shotAudio.play()
-            zombieImg.remove()
-            items[randomIndex].append(hitImg)
-        }
+    const hitImg = createHitImage();
+    items[randomIndex].appendChild(hitImg);
+  };
+}
 
+soundBtn.onclick = function () {
+  if (!buAudio.paused) {
+    buAudio.pause();
+    buAudio.currentTime = 0;
+    soundBtn.textContent = "SOUND ON";
+  } else {
+    buAudio.play();
+    soundBtn.textContent = "SOUND OFF";
+  }
+};
+
+// Запускаем игру
+showZombie();
+
+setInterval(function () {
+  if (!hit) {
+    missCounter.textContent = +missCounter.textContent + 1;
+  }
+  hit = false;
+  showZombie();
+}, 2000);
 
     </script>
 </body>
